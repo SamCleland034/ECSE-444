@@ -1,0 +1,118 @@
+
+
+
+ARM Macro Assembler    Page 1 
+
+
+    1 00000000                 AREA             test, CODE, READONLY
+    2 00000000         
+    3 00000000                 export           asm_variance ; label must be ex
+                                                            ported if it is to 
+                                                            be used as a functi
+                                                            on in C
+    4 00000000         asm_variance
+    5 00000000         
+    6 00000000 E92D 1FF0       PUSH{R4          - R12}      ; saving context ac
+                                                            cording to calling 
+                                                            convention
+    7 00000004 460C            MOV              R4, R1      ; counter for loop
+    8 00000006 EE03 4A90       VMOV.f32         S7, R4
+    9 0000000A F04F 0500       MOV              R5, #0
+   10 0000000E EE02 5A10       VMOV.f32         S4, R5
+   11 00000012 EE02 5A90       VMOV.f32         S5, R5
+   12 00000016 4605            MOV              R5, R0
+   13 00000018 EE02 1A90       VMOV.f32         S5, R1
+   14 0000001C         loop
+   15 0000001C 1E64            SUBS             R4, R4, #1  ; loop counter (N =
+                                                             N-1)
+   16 0000001E DB06            BLT              continue    ; loop has finished
+                                                            ?
+   17 00000020 ED90 0A00       VLDR.f32         S0, [R0]
+   18 00000024 EE32 2A00       VADD.f32         S4, S4, S0
+   19 00000028 F100 0004       ADD              R0, R0, #4
+   20 0000002C E7F6            B                loop
+   21 0000002E         
+   22 0000002E         continue
+   23 0000002E EE82 2A23       VDIV.f32         S4, S4, S7
+   24 00000032 460C            MOV              R4, R1
+   25 00000034         varianceloop
+   26 00000034 1E64            SUBS             R4, R4, #1
+   27 00000036 DB0A            BLT              done
+   28 00000038 ED95 0A00       VLDR.f32         S0, [R5]
+   29 0000003C EE30 3A42       VSUB.f32         S6, S0, S4
+   30 00000040 EE23 3A03       VMUL.f32         S6, S6, S6
+   31 00000044 EE72 2A83       VADD.f32         S5, S5, S6
+   32 00000048 F105 0504       ADD              R5, R5, #4
+   33 0000004C E7F2            B                varianceloop
+   34 0000004E         done
+   35 0000004E EE82 2AA3       VDIV.f32         S4, S5, S7
+   36 00000052 ED82 2A00       VSTR.f32         S4, [R2]    ; store dot product
+                                                             in the pointer
+   37 00000056         
+   38 00000056 E8BD 1FF0       POP{R4           - R12}      ; restore context
+   39 0000005A 4770            BX               LR          ; return
+   40 0000005C         
+   41 0000005C                 END
+Command Line: --debug --xref --diag_suppress=9931 --cpu=Cortex-M4.fp --apcs=int
+erwork --depend=.\objects\asm_variance.d -o.\objects\asm_variance.o -I"\campus.
+mcgill.ca\emf\cpe\eclela\My Documents\ECSE 444\GXX_Lab1\RTE" -IC:\Keil_v5\ARM\P
+ACK\ARM\CMSIS\5.3.0\CMSIS\Include -IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.3.0\Device\
+ARM\ARMCM4\Include --predefine="__EVAL SETA 1" --predefine="__UVISION_VERSION S
+ETA 515" --predefine="_RTE_ SETA 1" --predefine="ARMCM4_FP SETA 1" --list=.\lis
+tings\asm_variance.lst asm_variance.s
+
+
+
+ARM Macro Assembler    Page 1 Alphabetic symbol ordering
+Relocatable symbols
+
+asm_variance 00000000
+
+Symbol: asm_variance
+   Definitions
+      At line 4 in file asm_variance.s
+   Uses
+      At line 3 in file asm_variance.s
+Comment: asm_variance used once
+continue 0000002E
+
+Symbol: continue
+   Definitions
+      At line 22 in file asm_variance.s
+   Uses
+      At line 16 in file asm_variance.s
+Comment: continue used once
+done 0000004E
+
+Symbol: done
+   Definitions
+      At line 34 in file asm_variance.s
+   Uses
+      At line 27 in file asm_variance.s
+Comment: done used once
+loop 0000001C
+
+Symbol: loop
+   Definitions
+      At line 14 in file asm_variance.s
+   Uses
+      At line 20 in file asm_variance.s
+Comment: loop used once
+test 00000000
+
+Symbol: test
+   Definitions
+      At line 1 in file asm_variance.s
+   Uses
+      None
+Comment: test unused
+varianceloop 00000034
+
+Symbol: varianceloop
+   Definitions
+      At line 25 in file asm_variance.s
+   Uses
+      At line 33 in file asm_variance.s
+Comment: varianceloop used once
+6 symbols
+341 symbols in table
