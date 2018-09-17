@@ -1,1 +1,1 @@
-.\objects\asm_variance.o: asm_variance.s
+.\objects\asm_variance.o: asm\asm_variance.s

@@ -40,12 +40,12 @@ ARM Macro Assembler    Page 1
    26 00000032         
    27 00000032                 END
 Command Line: --debug --xref --diag_suppress=9931 --cpu=Cortex-M4.fp --apcs=int
-erwork --depend=.\objects\asm_dot_product.d -o.\objects\asm_dot_product.o -I"\c
-ampus.mcgill.ca\emf\cpe\eclela\My Documents\ECSE 444\GXX_Lab1\RTE" -IC:\Keil_v5
-\ARM\PACK\ARM\CMSIS\5.3.0\CMSIS\Include -IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.3.0\D
-evice\ARM\ARMCM4\Include --predefine="__EVAL SETA 1" --predefine="__UVISION_VER
-SION SETA 515" --predefine="_RTE_ SETA 1" --predefine="ARMCM4_FP SETA 1" --list
-=.\listings\asm_dot_product.lst asm_dot_product.s
+erwork --depend=.\objects\asm_dot_product.d -o.\objects\asm_dot_product.o -I.\R
+TE\_GXX_Lab1 -IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.4.0\CMSIS\Core\Include -IC:\Keil
+_v5\ARM\PACK\ARM\CMSIS\5.4.0\CMSIS\DSP\Include -IC:\Keil_v5\ARM\PACK\ARM\CMSIS\
+5.4.0\Device\ARM\ARMCM4\Include --predefine="__EVAL SETA 1" --predefine="__UVIS
+ION_VERSION SETA 526" --predefine="_RTE_ SETA 1" --predefine="ARMCM4_FP SETA 1"
+ --list=.\listings\asm_dot_product.lst asm\asm_dot_product.s
 
 
 
@@ -56,31 +56,31 @@ asm_dot_product 00000000
 
 Symbol: asm_dot_product
    Definitions
-      At line 4 in file asm_dot_product.s
+      At line 4 in file asm\asm_dot_product.s
    Uses
-      At line 3 in file asm_dot_product.s
+      At line 3 in file asm\asm_dot_product.s
 Comment: asm_dot_product used once
 done 0000002A
 
 Symbol: done
    Definitions
-      At line 21 in file asm_dot_product.s
+      At line 21 in file asm\asm_dot_product.s
    Uses
-      At line 12 in file asm_dot_product.s
+      At line 12 in file asm\asm_dot_product.s
 Comment: done used once
 loop 0000000C
 
 Symbol: loop
    Definitions
-      At line 10 in file asm_dot_product.s
+      At line 10 in file asm\asm_dot_product.s
    Uses
-      At line 19 in file asm_dot_product.s
+      At line 19 in file asm\asm_dot_product.s
 Comment: loop used once
 test 00000000
 
 Symbol: test
    Definitions
-      At line 1 in file asm_dot_product.s
+      At line 1 in file asm\asm_dot_product.s
    Uses
       None
 Comment: test unused

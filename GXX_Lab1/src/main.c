@@ -78,7 +78,7 @@ int main() {
 	printf("Pure C: Variance = %f\n", varianceC);
 	arm_var_f32(f1000_array, size, &varianceLibFunc);
 	printf("Library Function: Variance = %f\n", varianceLibFunc);
-	asm_variance(array, 3, &varianceASM);
+	asm_variance(f1000_array, size, &varianceASM);
 	printf("Assembly Subroutine: Variance = %f\n", varianceASM);
 	
 	
