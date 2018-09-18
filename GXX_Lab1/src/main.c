@@ -80,48 +80,5 @@ int main() {
 	printf("Library Function: Variance = %f\n", varianceLibFunc);
 	asm_variance(f1000_array, size, &varianceASM);
 	printf("Assembly Subroutine: Variance = %f\n", varianceASM);
-	
-	
-	/* LOOP TO FIND MAX*/
-	max = f10_array[0];
-	max_idx = 0;
-	for(i=0 ; i<10 ; i++) {
-		if(f10_array[i] > max) {
-			max = f10_array[i];
-			max_idx = i;
-		}	
-	}
-	
-	/* Assembly max function */
-	asm_max(f10_array, 10, &a_max, &a_max_idx);
-	
-	/* CMSIS-DSP max function */
-	arm_max_f32(f10_array, 10, &DSP_max, &DSP_max_idx);
-	
-	printf("Pure C   : Max element f[%d] = %f\n", max_idx, max);
-	printf("Assembly : Max element f[%d] = %f\n", a_max_idx, a_max);
-	printf("C: DSP   : Max element f[%d] = %f\n", DSP_max_idx, DSP_max);
-
-	
-	/* LOOP TO FIND MAX*/
-	max = f1000_array[0];
-	max_idx = 0;
-	for(i=0 ; i<1000 ; i++) {
-		if(f1000_array[i] > max) {
-			max = f1000_array[i];
-			max_idx = i;
-		}	
-	}
-	
-	/* Assembly max function */
-	asm_max(f1000_array, 1000, &a_max, &a_max_idx);
-	
-	/* CMSIS-DSP max function */
-	arm_max_f32(f1000_array, 1000, &DSP_max, &DSP_max_idx);
-	
-	printf("Pure C   : Max element f[%d] = %f\n", max_idx, max);
-	printf("Assembly : Max element f[%d] = %f\n", a_max_idx, a_max);
-	printf("C: DSP   : Max element f[%d] = %f\n", DSP_max_idx, DSP_max);
-
 	return 0;
 }
