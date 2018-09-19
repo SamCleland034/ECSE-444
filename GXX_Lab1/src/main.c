@@ -16,49 +16,40 @@ float f1000_array[1000] = {47.68, 26.67, 64.09, 31.60, 25.83, 87.41, 67.60, 59.6
 
 float dotProduct(float *a, float *b, int size) {
 	float value = 0;
-	int i = 0;
-	while (i < size) {
-		value += a[i] * b[i];
-		i++;
-	}
+	int i;
 	
+	// multiply elements with same index and add them to the value float
+	for(i=0;i<size;i++){
+		value += a[i] * b[i];
+	}
+
 	return value;		
 }
 
 float variance(float *a, int size) {
 	float mean;
-	int i = 0;
+	int i;
 	float total = 0;
-	while (i < size) {
-		total += a[i];
-		i++;
+	// add up all the numbers in the vector passed in
+	for(i=0;i<size;i++){
+		total+=a[i];
 	}
 	
+	// divide to get the mean
 	mean = (float) total / size;
-	total = 0, i = 0;
-	while (i < size) {
+	total = 0;
+	
+	// variance calculation below using pow function from math.h
+	for(i=0;i<size;i++){
 		total += pow(a[i] - mean, 2);
-		i++;
 	}
 	
 	return (float) total / size;
 }
 
 int main() {
-	float array[] = {3.2, 2.5, 10.1};
-	float *array2 = malloc(sizeof(float) * 1000);
-
-
+	//initalize variables
 	int size = 1000;
-	float max;
-	int max_idx;
-
-	float a_max;
-	int a_max_idx;
-	
-	float DSP_max;
-	uint32_t DSP_max_idx;
-	
 	int i = 0;		
 	float32_t resultLibFunc;
 	float varianceC;
