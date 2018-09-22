@@ -70,8 +70,8 @@ ARM Macro Assembler    Page 2
 
 
    28 0000003A EE23 3A03       VMUL.f32         S6, S6, S6  ; multiply the elem
-                                                            ent by itself for a
-                                                             square
+                                                            ent by itself to mi
+                                                            mic squaring
    29 0000003E EE72 2A83       VADD.f32         S5, S5, S6  ; add it to the var
                                                             iance element
    30 00000042 F105 0504       ADD              R5, R5, #4  ; get next element

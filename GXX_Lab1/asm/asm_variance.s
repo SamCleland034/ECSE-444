@@ -25,7 +25,7 @@ varianceloop
 	BLT done						; counter for loop
 	VLDR.f32 S0, [R5]				; load array element into S0 from R5
 	VSUB.f32 S6, S0, S4				; subtract element and mean
-	VMUL.f32 S6, S6, S6				; multiply the element by itself for a square
+	VMUL.f32 S6, S6, S6				; multiply the element by itself to mimic squaring
 	VADD.f32 S5, S5, S6				; add it to the variance element
 	ADD R5, R5, #4					; get next element
 	B varianceloop
