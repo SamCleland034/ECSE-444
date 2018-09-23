@@ -27,9 +27,25 @@ int main(void)
 	/* Turn on LED */
 	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_SET  );
 	
+	HAL_DAC_Start(&hdac1, DAC_CHANNEL_1);
+	int data = 0; 
   /* Infinite loop */
   while (1)
   {
+		if(data < 255) {
+			HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1,DAC_ALIGN_8B_R, data++);
+			continue;
+		}
+		
+		data = 0;
+
+		GPIO_PinState input = HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_13);
+		GPIO_PinState output = HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_14);
+		if(input == GPIO_PIN_SET && output == GPIO_PIN_RESET) {
+			HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_SET);
+		} else if(input == GPIO_PIN_RESET && output == GPIO_PIN_SET) {
+			HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_RESET);
+		}
 		//********** Student code here *************//
   }
 }
