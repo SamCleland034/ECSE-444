@@ -3,13 +3,44 @@
 
 /* Private variables ---------------------------------------------------------*/
 DAC_HandleTypeDef hdac1;
+int data = 0;
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_DAC1_Init(void);
 
+/**
+	* @brief implements the sawtooth waveform using channel 1 on the DAC
+	*/
+void sawtooth() {
+	if(data > 255) {
+		data = 0;
+	}
 
+	HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_8B_R, data++);
+}
+
+/**
+	* @brief implements the triangle wave function using the HAL extension driver
+	*/
+void triangle() {
+	HAL_DACEx_TriangleWaveGenerate(&hdac1, DAC_CHANNEL_2, 4095);
+	HAL_DAC_Start(&hdac1, DAC_CHANNEL_2);
+}
+
+/**
+  * @brief implements lighting the LED from a push down on the blue button
+	*/
+void light() {
+	GPIO_PinState input = HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_13);
+	GPIO_PinState output = HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_14);
+	if(input == GPIO_PIN_SET && output == GPIO_PIN_SET) {
+		HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_RESET);
+	} else if(input == GPIO_PIN_RESET && output == GPIO_PIN_RESET) {
+		HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_SET);
+	}
+}
 
 int main(void)
 {
@@ -19,33 +50,23 @@ int main(void)
   /* Configure the system clock */
   SystemClock_Config();
 
+
   /* Initialize all configured peripherals (GPIO and DAC) */
   MX_GPIO_Init();
   MX_DAC1_Init();
 
 	
 	/* Turn on LED */
-	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_SET  );
+	HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_SET);
 	
 	HAL_DAC_Start(&hdac1, DAC_CHANNEL_1);
-	int data = 0; 
+
   /* Infinite loop */
   while (1)
   {
-		if(data < 255) {
-			HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1,DAC_ALIGN_8B_R, data++);
-			continue;
-		}
-		
-		data = 0;
-
-		GPIO_PinState input = HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_13);
-		GPIO_PinState output = HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_14);
-		if(input == GPIO_PIN_SET && output == GPIO_PIN_RESET) {
-			HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_SET);
-		} else if(input == GPIO_PIN_RESET && output == GPIO_PIN_SET) {
-			HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_RESET);
-		}
+		triangle();
+		sawtooth();
+		light();
 		//********** Student code here *************//
   }
 }
@@ -131,6 +152,8 @@ static void MX_DAC1_Init(void)
 
   /**DAC channel OUT2 config */
   sConfig.DAC_ConnectOnChipPeripheral = DAC_CHIPCONNECT_DISABLE;
+	sConfig.DAC_Trigger = DAC_TRIGGER_SOFTWARE;
+
   if (HAL_DAC_ConfigChannel(&hdac1, &sConfig, DAC_CHANNEL_2) != HAL_OK)
   {
     _Error_Handler(__FILE__, __LINE__);
