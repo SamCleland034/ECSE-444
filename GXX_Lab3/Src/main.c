@@ -4,6 +4,7 @@
 ADC_HandleTypeDef hadc1;
 UART_HandleTypeDef huart1;
 DMA_HandleTypeDef hdma_usart1_tx;
+int flag; 
 
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
@@ -49,14 +50,18 @@ int main(void)
   }
 }
 void MX_ADC_Init(void) {
+	HAL_ADC_DeInit(&hadc1);
 	/* ADC Init setup */
-	ADC_InitTypeDef sInit;
-	sInit.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV1;
-	sInit.Resolution = ADC_RESOLUTION_12B;
-	sInit.DataAlign = ADC_DATAALIGN_LEFT;
-	sInit.ScanConvMode = ADC_SCAN_ENABLE;
-	sInit.LowPowerAutoWait = ENABLE;
-
+	hadc1.Instance = ADC1;
+	hadc1.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV1;
+	hadc1.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV1;
+	hadc1.Init.Resolution = ADC_RESOLUTION_12B;
+	hadc1.Init.DataAlign = ADC_DATAALIGN_LEFT;
+	hadc1.Init.ScanConvMode = ADC_SCAN_DISABLE;
+	hadc1.Init.LowPowerAutoWait = ENABLE;
+	hadc1.Init.OversamplingMode = DISABLE;
+	hadc1.Init.DMAContinuousRequests = DISABLE;
+	
   /**ADC Initialization */
   if(HAL_ADC_Init(&hadc1) != HAL_OK)
   {
