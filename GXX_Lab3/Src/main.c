@@ -5,6 +5,7 @@ ADC_HandleTypeDef hadc1;
 UART_HandleTypeDef huart1;
 DMA_HandleTypeDef hdma_usart1_tx;
 int flag; 
+uint32_t value;
 
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
@@ -18,7 +19,7 @@ int UART_Print_String(UART_HandleTypeDef *huart, char *data, uint16_t size) {
 
 int main(void)
 {
-	char temp[19] = {'T','e','m','p','e','r','a','t','u','r','e', ' ', '=', ' ', '3','0','C', '\n'};
+	char temp[18] = {'T','e','m','p','e','r','a','t','u','r','e', ' ', '=', ' ', '3','0','C', '\n'};
 	char ch[5] = {'j','o','b','s','\n'};
 	char receive = ' ';
 	char buffer[50];
@@ -32,7 +33,6 @@ int main(void)
   MX_USART1_UART_Init();
 	MX_ADC_Init();
 
-
   /* Infinite loop */
   while (1) {
 		//UART_Print_String(&huart1, &temp[0], 19);
@@ -41,21 +41,30 @@ int main(void)
 		HAL_UART_Receive(&huart1, (uint8_t *) &receive, 1, 3000);
 
 		
-		if(receive == 'x') {
-			receive = ' ';
-			UART_Print_String(&huart1, &temp[0], 19);
+		if(flag == 1) {
+			flag = 0;
+			HAL_ADC_Start(&hadc1);
+			if(HAL_ADC_PollForConversion(&hadc1, 10) == HAL_OK) {
+				value = HAL_ADC_GetValue(&hadc1);
+				value = __HAL_ADC_CALC_TEMPERATURE(3300, value, ADC_RESOLUTION10b);
+				temp[14] = value % 10;
+				temp[15] = value / 10;
+				UART_Print_String(&huart1, &temp[0], 18);
+			}
 			//UART_Print_String(&huart1, &buffer[0], 50);
 			//HAL_UART_Transmit(&huart1, (uint8_t *) &receive, 1, 30000);
+			HAL_ADC_Stop(&hadc1);
 		}	
   }
 }
 void MX_ADC_Init(void) {
 	HAL_ADC_DeInit(&hadc1);
+	__HAL_RCC_ADC_CLK_ENABLE();
 	/* ADC Init setup */
 	hadc1.Instance = ADC1;
 	hadc1.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV1;
 	hadc1.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV1;
-	hadc1.Init.Resolution = ADC_RESOLUTION_12B;
+	hadc1.Init.Resolution = ADC_RESOLUTION_10B;
 	hadc1.Init.DataAlign = ADC_DATAALIGN_LEFT;
 	hadc1.Init.ScanConvMode = ADC_SCAN_DISABLE;
 	hadc1.Init.LowPowerAutoWait = ENABLE;
@@ -141,7 +150,7 @@ void SystemClock_Config(void)
 
     /**Configure the Systick interrupt time 
     */
-  HAL_SYSTICK_Config(HAL_RCC_GetHCLKFreq()/1000);
+  HAL_SYSTICK_Config(HAL_RCC_GetHCLKFreq()/25000);
 
     /**Configure the Systick 
     */
