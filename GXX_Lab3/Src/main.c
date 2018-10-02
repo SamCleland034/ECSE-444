@@ -5,7 +5,7 @@ ADC_HandleTypeDef hadc1;
 UART_HandleTypeDef huart1;
 DMA_HandleTypeDef hdma_usart1_tx;
 int flag; 
-uint32_t value;
+int value;
 
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
@@ -38,17 +38,16 @@ int main(void)
 		//UART_Print_String(&huart1, &temp[0], 19);
 
 		
-		HAL_UART_Receive(&huart1, (uint8_t *) &receive, 1, 3000);
+		//HAL_UART_Receive(&huart1, (uint8_t *) &receive, 1, 3000);
 
 		
 		if(flag == 1) {
 			flag = 0;
 			HAL_ADC_Start(&hadc1);
-			if(HAL_ADC_PollForConversion(&hadc1, 10) == HAL_OK) {
-				value = HAL_ADC_GetValue(&hadc1);
-				value = __HAL_ADC_CALC_TEMPERATURE(3300, value, ADC_RESOLUTION10b);
-				temp[14] = value % 10;
-				temp[15] = value / 10;
+			if(HAL_ADC_PollForConversion(&hadc1, 100) == HAL_OK) {
+				value = __HAL_ADC_CALC_TEMPERATURE(3300, (uint16_t) HAL_ADC_GetValue(&hadc1), ADC_RESOLUTION_10B);
+				temp[14] = (char) ((value / 10) + 48);
+				temp[15] = (char) ((value % 10) + 48);
 				UART_Print_String(&huart1, &temp[0], 18);
 			}
 			//UART_Print_String(&huart1, &buffer[0], 50);
@@ -58,18 +57,17 @@ int main(void)
   }
 }
 void MX_ADC_Init(void) {
-	HAL_ADC_DeInit(&hadc1);
 	__HAL_RCC_ADC_CLK_ENABLE();
 	/* ADC Init setup */
 	hadc1.Instance = ADC1;
-	hadc1.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV1;
-	hadc1.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV1;
+//	hadc1.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV1;
 	hadc1.Init.Resolution = ADC_RESOLUTION_10B;
-	hadc1.Init.DataAlign = ADC_DATAALIGN_LEFT;
-	hadc1.Init.ScanConvMode = ADC_SCAN_DISABLE;
-	hadc1.Init.LowPowerAutoWait = ENABLE;
-	hadc1.Init.OversamplingMode = DISABLE;
+	hadc1.Init.DataAlign = ADC_DATAALIGN_RIGHT;
+	hadc1.Init.ScanConvMode = ADC_SCAN_ENABLE;
+	//hadc1.Init.LowPowerAutoWait = ENABLE;
+	//hadc1.Init.OversamplingMode = DISABLE;
 	hadc1.Init.DMAContinuousRequests = DISABLE;
+	hadc1.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
 	
   /**ADC Initialization */
   if(HAL_ADC_Init(&hadc1) != HAL_OK)
@@ -81,7 +79,9 @@ void MX_ADC_Init(void) {
 	/*initialize channel*/
 	channel.Channel = ADC_CHANNEL_TEMPSENSOR;
 	channel.Rank = ADC_REGULAR_RANK_1;
-	channel.SamplingTime = ADC_SAMPLETIME_2CYCLES_5;
+	channel.SamplingTime = ADC_SAMPLETIME_12CYCLES_5;
+	channel.OffsetNumber = ADC_OFFSET_NONE;
+	channel.Offset = 0;
 	if(HAL_ADC_ConfigChannel(&hadc1, &channel) != HAL_OK) {
 		_Error_Handler(__FILE__, __LINE__);
 	}
@@ -150,7 +150,7 @@ void SystemClock_Config(void)
 
     /**Configure the Systick interrupt time 
     */
-  HAL_SYSTICK_Config(HAL_RCC_GetHCLKFreq()/25000);
+  HAL_SYSTICK_Config(HAL_RCC_GetHCLKFreq()/5);
 
     /**Configure the Systick 
     */
