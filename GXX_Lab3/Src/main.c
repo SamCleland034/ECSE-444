@@ -34,39 +34,38 @@ int main(void)
 	MX_ADC_Init();
 
   /* Infinite loop */
-  while (1) {
-		//UART_Print_String(&huart1, &temp[0], 19);
+  while (1) {		
+		HAL_UART_Receive(&huart1, (uint8_t *) &receive, 1, 3000);
+		if(receive == 'x') {
+			UART_Print_String(&huart1, &ch[0], 5);
+		}
 
 		
-		//HAL_UART_Receive(&huart1, (uint8_t *) &receive, 1, 3000);
-
-		
-		if(flag == 1) {
+		/*if(flag == 1) {
 			flag = 0;
 			HAL_ADC_Start(&hadc1);
-			if(HAL_ADC_PollForConversion(&hadc1, 100) == HAL_OK) {
-				value = __HAL_ADC_CALC_TEMPERATURE(3300, (uint16_t) HAL_ADC_GetValue(&hadc1), ADC_RESOLUTION_10B);
+			if(HAL_ADC_PollForConversion(&hadc1, 10) == HAL_OK) {
+				value = __HAL_ADC_CALC_TEMPERATURE(3300, HAL_ADC_GetValue(&hadc1), ADC_RESOLUTION_10B);
 				temp[14] = (char) ((value / 10) + 48);
 				temp[15] = (char) ((value % 10) + 48);
 				UART_Print_String(&huart1, &temp[0], 18);
 			}
-			//UART_Print_String(&huart1, &buffer[0], 50);
-			//HAL_UART_Transmit(&huart1, (uint8_t *) &receive, 1, 30000);
+			
 			HAL_ADC_Stop(&hadc1);
-		}	
+		}*/
   }
 }
 void MX_ADC_Init(void) {
 	__HAL_RCC_ADC_CLK_ENABLE();
 	/* ADC Init setup */
 	hadc1.Instance = ADC1;
-//	hadc1.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV1;
+	hadc1.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV1;
 	hadc1.Init.Resolution = ADC_RESOLUTION_10B;
 	hadc1.Init.DataAlign = ADC_DATAALIGN_RIGHT;
-	hadc1.Init.ScanConvMode = ADC_SCAN_ENABLE;
-	//hadc1.Init.LowPowerAutoWait = ENABLE;
-	//hadc1.Init.OversamplingMode = DISABLE;
-	hadc1.Init.DMAContinuousRequests = DISABLE;
+	hadc1.Init.ExternalTrigConv = ADC_SOFTWARE_START;
+	hadc1.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
+	//hadc1.Init.ScanConvMode = ADC_SCAN_ENABLE;
+	//hadc1.Init.DMAContinuousRequests = DISABLE;
 	hadc1.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
 	
   /**ADC Initialization */
@@ -79,7 +78,8 @@ void MX_ADC_Init(void) {
 	/*initialize channel*/
 	channel.Channel = ADC_CHANNEL_TEMPSENSOR;
 	channel.Rank = ADC_REGULAR_RANK_1;
-	channel.SamplingTime = ADC_SAMPLETIME_12CYCLES_5;
+	channel.SamplingTime = ADC_SAMPLETIME_24CYCLES_5;
+	channel.SingleDiff = ADC_SINGLE_ENDED; 
 	channel.OffsetNumber = ADC_OFFSET_NONE;
 	channel.Offset = 0;
 	if(HAL_ADC_ConfigChannel(&hadc1, &channel) != HAL_OK) {
