@@ -41,7 +41,7 @@
 #include "stm32l4xx_hal.h"
 
 /* USER CODE BEGIN Includes */
-
+int flag;
 /* USER CODE END Includes */
 
 /* Private variables ---------------------------------------------------------*/
@@ -80,7 +80,9 @@ static void MX_USART1_UART_Init(void);
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-
+	char temp[30];
+	int value;
+	int count = 0;
   /* USER CODE END 1 */
 
   /* MCU Configuration----------------------------------------------------------*/
@@ -112,14 +114,27 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-
-  /* USER CODE END WHILE */
-
-  /* USER CODE BEGIN 3 */
-
-  }
-  /* USER CODE END 3 */
-
+		// SysTick clock for interrupts, 200 ms period
+		if(flag) {
+			flag = 0;
+			HAL_ADC_Start(&hadc1);
+			if(HAL_ADC_PollForConversion(&hadc1, 10) == HAL_OK) {
+				// read temperature and convert it into celsius with 10B resolution
+				value = __HAL_ADC_CALC_TEMPERATURE(3300, HAL_ADC_GetValue(&hadc1), ADC_RESOLUTION_10B);
+				// put values into array and add a new line to the array
+				temp[count++] = (char) ((value / 10) + 48);
+				temp[count++] = (char) ((value % 10) + 48);
+				temp[count++] = '\n';
+			}
+			
+			HAL_ADC_Stop(&hadc1);
+			// once we get 10 samples, transmit to UART
+			if(count == 30) {
+				count = 0;
+				HAL_UART_Transmit_DMA(&huart1, (uint8_t *) temp, 30);
+			}
+		}
+	}
 }
 
 /**
@@ -128,7 +143,6 @@ int main(void)
   */
 void SystemClock_Config(void)
 {
-
   RCC_OscInitTypeDef RCC_OscInitStruct;
   RCC_ClkInitTypeDef RCC_ClkInitStruct;
   RCC_PeriphCLKInitTypeDef PeriphClkInit;
@@ -189,7 +203,7 @@ void SystemClock_Config(void)
 
     /**Configure the Systick interrupt time 
     */
-  HAL_SYSTICK_Config(HAL_RCC_GetHCLKFreq()/1000);
+  HAL_SYSTICK_Config(HAL_RCC_GetHCLKFreq()/5);
 
     /**Configure the Systick 
     */
@@ -210,7 +224,7 @@ static void MX_ADC1_Init(void)
     */
   hadc1.Instance = ADC1;
   hadc1.Init.ClockPrescaler = ADC_CLOCK_ASYNC_DIV1;
-  hadc1.Init.Resolution = ADC_RESOLUTION_12B;
+  hadc1.Init.Resolution = ADC_RESOLUTION_10B;
   hadc1.Init.DataAlign = ADC_DATAALIGN_RIGHT;
   hadc1.Init.ScanConvMode = ADC_SCAN_DISABLE;
   hadc1.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
@@ -240,7 +254,7 @@ static void MX_ADC1_Init(void)
     */
   sConfig.Channel = ADC_CHANNEL_TEMPSENSOR;
   sConfig.Rank = ADC_REGULAR_RANK_1;
-  sConfig.SamplingTime = ADC_SAMPLETIME_2CYCLES_5;
+  sConfig.SamplingTime = ADC_SAMPLETIME_24CYCLES_5;
   sConfig.SingleDiff = ADC_SINGLE_ENDED;
   sConfig.OffsetNumber = ADC_OFFSET_NONE;
   sConfig.Offset = 0;
