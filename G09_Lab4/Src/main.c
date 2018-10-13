@@ -83,6 +83,7 @@ int main(void)
 	char temp[30];
 	int value;
 	int count = 0;
+	int sampleSize = 30;
   /* USER CODE END 1 */
 
   /* MCU Configuration----------------------------------------------------------*/
@@ -128,10 +129,11 @@ int main(void)
 			}
 			
 			HAL_ADC_Stop(&hadc1);
+			
 			// once we get 10 samples, transmit to UART
-			if(count == 30) {
+			if(count == sampleSize) {
 				count = 0;
-				HAL_UART_Transmit_DMA(&huart1, (uint8_t *) temp, 30);
+				HAL_UART_Transmit_DMA(&huart1, (uint8_t *) temp, sampleSize);
 			}
 		}
 	}
