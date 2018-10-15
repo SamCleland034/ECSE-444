@@ -55,7 +55,8 @@ UART_HandleTypeDef huart1;
 /* Private variables ---------------------------------------------------------*/
 volatile int flag = 0;
 int transmitting = 0;
-int data[1000];
+// stored at 0x200000DC
+char data[14000];
 int i = 0;
 /* USER CODE END PV */
 
@@ -73,23 +74,37 @@ static void MX_TIM1_Init(void);
 
 /* USER CODE BEGIN 0 */
 void transmitAudio() {
-	while(i < 1000) {
+	HAL_DAC_Start(&hdac1, DAC_CHANNEL_1);
+	HAL_DAC_Start(&hdac1, DAC_CHANNEL_2);
+	i = 0;
+	while(i < 14000) {
 		if(flag) {
+			// reset flag
 			flag = 0;	
-			// sample data from csv file into DAC
-			HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, data[i]);
-			HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, data[i++]);
+			// write data from csv file into DAC
+			HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, (data[i + 1] << 8) + data[i]); // have to shift second half of data since it is the 8 MSBs
+			HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, (data[i + 1] << 8) + data[i]);
+			i += 2;
 		}
 	}
+	
+	// stop DACs
+	HAL_DAC_Stop(&hdac1, DAC_CHANNEL_1);
+	HAL_DAC_Stop(&hdac1, DAC_CHANNEL_2);
 }
 void checkPress() {
+	// checks if blue button was pressed
 	if(HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_13) == GPIO_PIN_RESET) {
 		HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_SET);
-		HAL_UART_Receive(&huart1, (uint8_t *)data, 1000, 10000);
+		while(HAL_UART_Receive(&huart1, (uint8_t *)data, 14000, 10000) == HAL_OK) {}
 		transmitAudio();
 		HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_RESET);
 	}	
-}
+	// Unlock flash
+	// for 0 to 20
+	// Receive data (dma?) in 2k sram buffer
+	
+} 
 /* USER CODE END 0 */
 
 /**
@@ -256,9 +271,9 @@ static void MX_TIM1_Init(void)
   TIM_MasterConfigTypeDef sMasterConfig;
 
   htim1.Instance = TIM1;
-  htim1.Init.Prescaler = 60;
+  htim1.Init.Prescaler = 20;
   htim1.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim1.Init.Period = 400000;
+  htim1.Init.Period = 500; // ? 80Mhz/(period+1) = 8k
   htim1.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim1.Init.RepetitionCounter = 0;
   htim1.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
