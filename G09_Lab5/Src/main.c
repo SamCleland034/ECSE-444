@@ -73,7 +73,11 @@ static void MX_TIM1_Init(void);
 /* USER CODE END PFP */
 
 /* USER CODE BEGIN 0 */
+/**
+  * @brief writes audio (data buffer in SRAM) to the DAC
+  */
 void transmitAudio() {
+	// start DACs
 	HAL_DAC_Start(&hdac1, DAC_CHANNEL_1);
 	HAL_DAC_Start(&hdac1, DAC_CHANNEL_2);
 	i = 0;
@@ -92,18 +96,20 @@ void transmitAudio() {
 	HAL_DAC_Stop(&hdac1, DAC_CHANNEL_1);
 	HAL_DAC_Stop(&hdac1, DAC_CHANNEL_2);
 }
+
+/**
+  * @brief checks if the blue button the board has been pressed, if pressed start transmission
+  */
 void checkPress() {
 	// checks if blue button was pressed
 	if(HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_13) == GPIO_PIN_RESET) {
+		// turn on led to signal transmission
 		HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_SET);
-		while(HAL_UART_Receive(&huart1, (uint8_t *)data, 14000, 10000) == HAL_OK) {}
+		// receive information from UART
+		while(HAL_UART_Receive(&huart1, (uint8_t *)data, 14000, 5000) == HAL_OK) {}
 		transmitAudio();
 		HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_RESET);
 	}	
-	// Unlock flash
-	// for 0 to 20
-	// Receive data (dma?) in 2k sram buffer
-	
 } 
 /* USER CODE END 0 */
 
