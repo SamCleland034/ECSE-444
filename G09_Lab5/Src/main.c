@@ -55,7 +55,7 @@ UART_HandleTypeDef huart1;
 /* Private variables ---------------------------------------------------------*/
 volatile int flag = 0;
 int transmitting = 0;
-// stored at 0x200000DC
+// stored at 0x200000DC (SRAM)
 char data[14000];
 int i = 0;
 /* USER CODE END PV */
@@ -86,12 +86,15 @@ void transmitAudio() {
 			// reset flag
 			flag = 0;	
 			// write data from csv file into DAC
-			HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, (data[i + 1] << 8) + data[i]); // have to shift second half of data since it is the 8 MSBs
+			// have to shift second half of data since it is the 8 MSBs
+			HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, (data[i + 1] << 8) + data[i]);
 			HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, (data[i + 1] << 8) + data[i]);
 			i += 2;
 		}
 	}
 	
+	HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 0);
+	HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, 0);
 	// stop DACs
 	HAL_DAC_Stop(&hdac1, DAC_CHANNEL_1);
 	HAL_DAC_Stop(&hdac1, DAC_CHANNEL_2);
@@ -106,7 +109,7 @@ void checkPress() {
 		// turn on led to signal transmission
 		HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_SET);
 		// receive information from UART
-		while(HAL_UART_Receive(&huart1, (uint8_t *)data, 14000, 5000) == HAL_OK) {}
+		while(HAL_UART_Receive(&huart1, (uint8_t *)data, 14000, 5000) != HAL_OK) {}
 		transmitAudio();
 		HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, GPIO_PIN_RESET);
 	}	
