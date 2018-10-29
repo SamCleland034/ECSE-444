@@ -82,6 +82,7 @@ volatile uint32_t taken = 6;
 volatile uint32_t flag = 0;
 volatile uint32_t lowPower = 0;
 int16_t accelXYZ[3];
+float gyroXYZ[3];
 int16_t magnetoXYZ[3];
 
 /* USER CODE BEGIN PV */
@@ -287,13 +288,9 @@ void StartGyroTask(void const * argument)
 	BSP_GYRO_Init();
   for(;;)
   {
-		while(lowPower && taken != 4) {
-			BSP_GYRO_DeInit();
-			if(xSemaphoreTake(lpSem, portMAX_DELAY) == pdTRUE) {
-				BSP_GYRO_Init();
-				taken = 4;
-				break;
-			}	
+		if(lowPower && taken != 4) {
+			xSemaphoreTake(lpSem, portMAX_DELAY);
+			taken = 4;		
 		}
 		
 		osDelay(200);
@@ -303,8 +300,8 @@ void StartGyroTask(void const * argument)
 			continue;
 		}
 
-		BSP_ACCELERO_AccGetXYZ(accelXYZ);
-		sprintf(uartData,"Gyro: X = %d Y = %d Z = %d\n", accelXYZ[0], accelXYZ[1], accelXYZ[2]);
+		BSP_GYRO_GetXYZ(gyroXYZ);
+		sprintf(uartData,"Gyro: X = %d Y = %d Z = %d\n", (int32_t) gyroXYZ[0], (int32_t) gyroXYZ[1], (int32_t) gyroXYZ[2]);
 		flag = 1;
 		while(flag);
 		if(lowPower && taken != 4) {

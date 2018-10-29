@@ -3,7 +3,7 @@
 <title>Static Call Graph - [GXX_Lab7\GXX_Lab7.axf]</title></head>
 <body><HR>
 <H1>Static Call Graph for image GXX_Lab7\GXX_Lab7.axf</H1><HR>
-<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5060750: Last Updated: Mon Oct 29 16:14:39 2018
+<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5060750: Last Updated: Mon Oct 29 16:29:00 2018
 <BR><P>
 <H3>Maximum Stack Usage =        360 bytes + Unknown(Cycles, Untraceable Function Pointers)</H3><H3>
 Call chain for Maximum Stack Depth:</H3>
@@ -569,7 +569,6 @@ Global Symbols
 
 <P><STRONG><a name="[d9]"></a>BSP_ACCELERO_AccGetXYZ</STRONG> (Thumb, 18 bytes, Stack size 0 bytes, stm32l475e_iot01_accelero.o(i.BSP_ACCELERO_AccGetXYZ))
 <BR><BR>[Called By]<UL><LI><a href="#[7d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;StartHumidityTask
-<LI><a href="#[7e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;StartGyroTask
 <LI><a href="#[79]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;StartAccelerometerTask
 </UL>
 
@@ -583,7 +582,7 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[79]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;StartAccelerometerTask
 </UL>
 
-<P><STRONG><a name="[dc]"></a>BSP_GYRO_DeInit</STRONG> (Thumb, 18 bytes, Stack size 0 bytes, stm32l475e_iot01_gyro.o(i.BSP_GYRO_DeInit))
+<P><STRONG><a name="[dc]"></a>BSP_GYRO_GetXYZ</STRONG> (Thumb, 18 bytes, Stack size 0 bytes, stm32l475e_iot01_gyro.o(i.BSP_GYRO_GetXYZ))
 <BR><BR>[Called By]<UL><LI><a href="#[7e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;StartGyroTask
 </UL>
 
@@ -1244,8 +1243,7 @@ Global Symbols
 <BR><BR>[Stack]<UL><LI>Max Depth = 128<LI>Call Chain = StartGyroTask &rArr; xQueueGenericReceive &rArr; xTaskResumeAll &rArr; xTaskIncrementTick
 </UL>
 <BR>[Calls]<UL><LI><a href="#[db]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;BSP_GYRO_Init
-<LI><a href="#[dc]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;BSP_GYRO_DeInit
-<LI><a href="#[d9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;BSP_ACCELERO_AccGetXYZ
+<LI><a href="#[dc]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;BSP_GYRO_GetXYZ
 <LI><a href="#[96]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xQueueGenericSend
 <LI><a href="#[94]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;xQueueGenericReceive
 <LI><a href="#[93]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;osDelay
