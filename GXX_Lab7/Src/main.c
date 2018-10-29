@@ -54,6 +54,8 @@
 #include "stm32l475e_iot01_tsensor.h"
 #include "stm32l475e_iot01_psensor.h"
 #include "stm32l475e_iot01_magneto.h"
+#include "stm32l475e_iot01_gyro.h"
+#include "stm32l475e_iot01_hsensor.h"
 #include "stm32l475e_iot01_accelero.h"
 
 /* USER CODE BEGIN Includes */
@@ -68,12 +70,15 @@ osThreadId temperatureTaskHandle;
 osThreadId magnetoTaskHandle;
 osThreadId pressureTaskHandle;
 osThreadId buttonTaskHandle;
+osThreadId gyroTaskHandle;
+osThreadId humidityTaskHandle;
+
 
 int timeout = 0;
 SemaphoreHandle_t lpSem;
 SemaphoreHandle_t xSemaphore;
 char uartData[35];
-volatile uint32_t taken = 5;
+volatile uint32_t taken = 6;
 volatile uint32_t flag = 0;
 volatile uint32_t lowPower = 0;
 int16_t accelXYZ[3];
@@ -164,7 +169,9 @@ void StartAccelerometerTask(void const * argument)
   for(;;)
   {
 		while(lowPower && taken != 0) {
+			BSP_ACCELERO_DeInit();
 			if(xSemaphoreTake(lpSem, portMAX_DELAY) == pdTRUE) {
+				BSP_ACCELERO_Init();
 				taken = 0;
 				break;
 			}	
@@ -221,7 +228,9 @@ void StartMagnetoTask(void const * argument)
 	for(;;)
   {
 		while(lowPower && taken != 2) {
+			BSP_MAGNETO_DeInit();
 			if(xSemaphoreTake(lpSem, portMAX_DELAY) == pdTRUE) {
+				BSP_MAGNETO_Init();
 				taken = 2;
 				break;
 			}	
@@ -251,6 +260,7 @@ void StartPressureTask(void const * argument)
   {
 		while(lowPower && taken != 3) {
 			if(xSemaphoreTake(lpSem, portMAX_DELAY) == pdTRUE) {
+				BSP_PSENSOR_Init();
 				taken = 3;
 				break;
 			}	
@@ -267,6 +277,66 @@ void StartPressureTask(void const * argument)
 		flag = 1;
 		while(flag);
 		if(lowPower && taken != 3) {
+			osDelay(1000);
+		}
+  }
+}
+
+void StartGyroTask(void const * argument)
+{
+	BSP_GYRO_Init();
+  for(;;)
+  {
+		while(lowPower && taken != 4) {
+			BSP_GYRO_DeInit();
+			if(xSemaphoreTake(lpSem, portMAX_DELAY) == pdTRUE) {
+				BSP_GYRO_Init();
+				taken = 4;
+				break;
+			}	
+		}
+		
+		osDelay(200);
+		xSemaphoreTake(xSemaphore, portMAX_DELAY);
+		if(lowPower && taken != 4) {
+			xSemaphoreGive(xSemaphore);
+			continue;
+		}
+
+		BSP_ACCELERO_AccGetXYZ(accelXYZ);
+		sprintf(uartData,"Gyro: X = %d Y = %d Z = %d\n", accelXYZ[0], accelXYZ[1], accelXYZ[2]);
+		flag = 1;
+		while(flag);
+		if(lowPower && taken != 4) {
+			osDelay(1000);
+		}
+  }
+}
+
+void StartHumidityTask(void const * argument)
+{
+	BSP_HSENSOR_Init();
+  for(;;)
+  {
+		while(lowPower && taken != 5) {
+			if(xSemaphoreTake(lpSem, portMAX_DELAY) == pdTRUE) {
+				taken = 5;
+				break;
+			}	
+		}
+		
+		osDelay(200);
+		xSemaphoreTake(xSemaphore, portMAX_DELAY);
+		if(lowPower && taken != 5) {
+			xSemaphoreGive(xSemaphore);
+			continue;
+		}
+
+		BSP_ACCELERO_AccGetXYZ(accelXYZ);
+		sprintf(uartData,"Humidity: %f\n", BSP_HSENSOR_ReadHumidity());
+		flag = 1;
+		while(flag);
+		if(lowPower && taken != 5) {
 			osDelay(1000);
 		}
   }
@@ -319,7 +389,12 @@ void ButtonTask(void const * argument)
 				
 				if(counter >= 500) {
 					lowPower = 0;
-					for(int i=0;i<4;i++) {
+					xSemaphoreTake(xSemaphore, portMAX_DELAY);
+					printf("Powering down\n");
+					while(buttonPressed());
+					while(!buttonPressed());
+					xSemaphoreGive(xSemaphore);
+					for(int i=0;i<6;i++) {
 						xSemaphoreGive(lpSem);
 						osDelay(200);
 					}
@@ -410,6 +485,12 @@ int main(void)
 	
 	osThreadDef(temperatureTask, StartTemperatureTask, osPriorityNormal, 0, 128);
 	temperatureTaskHandle = osThreadCreate(osThread(temperatureTask), NULL);
+		
+	osThreadDef(humidityTask, StartHumidityTask, osPriorityNormal, 0, 128);
+	humidityTaskHandle = osThreadCreate(osThread(humidityTask), NULL);
+	
+	osThreadDef(gyroTask, StartGyroTask, osPriorityNormal, 0, 128);
+	gyroTaskHandle = osThreadCreate(osThread(gyroTask), NULL);
 	
 	osThreadDef(buttonTask, ButtonTask, osPriorityNormal, 0, 128);
 	buttonTaskHandle = osThreadCreate(osThread(buttonTask), NULL);
