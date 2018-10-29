@@ -73,7 +73,7 @@ int timeout = 0;
 SemaphoreHandle_t lpSem;
 SemaphoreHandle_t xSemaphore;
 char uartData[35];
-volatile uint32_t taken = 0;
+volatile uint32_t taken = 5;
 volatile uint32_t flag = 0;
 volatile uint32_t lowPower = 0;
 int16_t accelXYZ[3];
@@ -164,7 +164,7 @@ void StartAccelerometerTask(void const * argument)
   for(;;)
   {
 		while(lowPower && taken != 0) {
-			if(xSemaphoreTake(lpSem, 3000) == pdTRUE) {
+			if(xSemaphoreTake(lpSem, portMAX_DELAY) == pdTRUE) {
 				taken = 0;
 				break;
 			}	
@@ -172,12 +172,17 @@ void StartAccelerometerTask(void const * argument)
 		
 		osDelay(200);
 		xSemaphoreTake(xSemaphore, portMAX_DELAY);
+		if(lowPower && taken != 0) {
+			xSemaphoreGive(xSemaphore);
+			continue;
+		}
+
 		BSP_ACCELERO_AccGetXYZ(accelXYZ);
 		sprintf(uartData,"Accel: X = %d Y = %d Z = %d\n", accelXYZ[0], accelXYZ[1], accelXYZ[2]);
 		flag = 1;
 		while(flag);
-		if(!taken) {
-			osDelay(200);
+		if(lowPower && taken != 0) {
+			osDelay(1000);
 		}
   }
 }
@@ -189,18 +194,23 @@ void StartTemperatureTask(void const * argument)
   {
 		osDelay(200);
 		while(lowPower && taken != 1) {
-			if(xSemaphoreTake(lpSem, 3000) == pdTRUE) {
+			if(xSemaphoreTake(lpSem, portMAX_DELAY) == pdTRUE) {
 				taken = 1;
 				break;
 			}	
 		}
 		
 		xSemaphoreTake(xSemaphore, portMAX_DELAY);
+		if(lowPower && taken != 1) {
+			xSemaphoreGive(xSemaphore);
+			continue;
+		}
+		
 		sprintf(uartData, "Temperature: %f\n", BSP_TSENSOR_ReadTemp());
 		flag = 1;
 		while(flag);
-		if(taken == 1) {
-			osDelay(200);
+		if(lowPower && taken != 1) {
+			osDelay(1000);
 		}
   }
 }
@@ -211,7 +221,7 @@ void StartMagnetoTask(void const * argument)
 	for(;;)
   {
 		while(lowPower && taken != 2) {
-			if(xSemaphoreTake(lpSem, 3000) == pdTRUE) {
+			if(xSemaphoreTake(lpSem, portMAX_DELAY) == pdTRUE) {
 				taken = 2;
 				break;
 			}	
@@ -219,12 +229,17 @@ void StartMagnetoTask(void const * argument)
 
 		osDelay(200);
 		xSemaphoreTake(xSemaphore, portMAX_DELAY);
+		if(lowPower && taken != 2) {
+			xSemaphoreGive(xSemaphore);
+			continue;
+		}
+		
 		BSP_MAGNETO_GetXYZ(magnetoXYZ);
 		sprintf(uartData,"Magneto: X = %d Y = %d Z = %d\n", magnetoXYZ[0], magnetoXYZ[1], magnetoXYZ[2]);
 		flag = 1;
 		while(flag);
-		if(taken != 2) {
-			osDelay(200);
+		if(lowPower && taken != 2) {
+			osDelay(1000);
 		}
   }
 }
@@ -234,19 +249,25 @@ void StartPressureTask(void const * argument)
 	BSP_PSENSOR_Init();
 	for(;;)
   {
-		while(lowPower && !taken) {
-			if(xSemaphoreTake(lpSem, 3000) == pdTRUE) {
+		while(lowPower && taken != 3) {
+			if(xSemaphoreTake(lpSem, portMAX_DELAY) == pdTRUE) {
+				taken = 3;
 				break;
 			}	
 		}
 		
 		osDelay(200);
 		xSemaphoreTake(xSemaphore, portMAX_DELAY);
+		if(lowPower && taken != 3) {
+			xSemaphoreGive(xSemaphore);
+			continue;
+		}
+		
 		sprintf(uartData,"Pressure: %f\n", BSP_PSENSOR_ReadPressure());
 		flag = 1;
 		while(flag);
-		if(!taken) {
-			osDelay(200);
+		if(lowPower && taken != 3) {
+			osDelay(1000);
 		}
   }
 }
@@ -281,8 +302,10 @@ void ButtonTask(void const * argument)
 					counter++;
 				}
 
-				if(counter >= 30) {
+				if(counter >= 500) {
 					lowPower = 1;
+					while(buttonPressed());
+					osDelay(200);
 					break;
 				}
 			}
@@ -294,8 +317,13 @@ void ButtonTask(void const * argument)
 					counter++;
 				}
 				
-				if(counter >= 30) {
+				if(counter >= 500) {
 					lowPower = 0;
+					for(int i=0;i<4;i++) {
+						xSemaphoreGive(lpSem);
+						osDelay(200);
+					}
+					while(buttonPressed());
 					goto loop;
 				}
 			}
@@ -377,12 +405,12 @@ int main(void)
 	osThreadDef(magnetoTask, StartMagnetoTask, osPriorityNormal, 0, 128);
   magnetoTaskHandle = osThreadCreate(osThread(magnetoTask), NULL);
 
-	/*osThreadDef(pressureTask, StartPressureTask, osPriorityNormal, 0, 128);
+	osThreadDef(pressureTask, StartPressureTask, osPriorityNormal, 0, 128);
   pressureTaskHandle = osThreadCreate(osThread(pressureTask), NULL);
 	
 	osThreadDef(temperatureTask, StartTemperatureTask, osPriorityNormal, 0, 128);
 	temperatureTaskHandle = osThreadCreate(osThread(temperatureTask), NULL);
-	*/
+	
 	osThreadDef(buttonTask, ButtonTask, osPriorityNormal, 0, 128);
 	buttonTaskHandle = osThreadCreate(osThread(buttonTask), NULL);
   /* USER CODE BEGIN RTOS_THREADS */
